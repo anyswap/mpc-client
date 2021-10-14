@@ -26,6 +26,7 @@ func initApp() {
 	app.Copyright = "Copyright 2020-2021 The MPC-Client Authors"
 	app.Commands = []*cli.Command{
 		sendEthTxCommand,
+		signPlainTextCommand,
 		utils.LicenseCommand,
 		utils.VersionCommand,
 	}
