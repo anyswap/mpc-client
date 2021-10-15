@@ -40,6 +40,7 @@ var (
 			signTimeoutFlag,
 			gatewayFlag,
 			chainIDFlag,
+			createContractFlag,
 			fromAddrFlag,
 			toAddrFlag,
 			nonceFlag,
@@ -63,6 +64,8 @@ type sendEthTxArgs struct {
 	value    *big.Int
 	input    []byte
 	dryrun   bool
+
+	createContract bool
 }
 
 var (
@@ -80,11 +83,16 @@ func checkSendEthTxArguments(ctx *cli.Context) (err error) {
 	}
 	txArgs.from = common.HexToAddress(fromAddrStr)
 
+	txArgs.createContract = ctx.Bool(createContractFlag.Name)
 	toAddrStr := ctx.String(toAddrFlag.Name)
-	if !common.IsHexAddress(toAddrStr) {
-		return fmt.Errorf("wrong to address %v", toAddrStr)
+	if !txArgs.createContract {
+		if !common.IsHexAddress(toAddrStr) {
+			return fmt.Errorf("wrong to address %v", toAddrStr)
+		}
+		txArgs.to = common.HexToAddress(toAddrStr)
+	} else if toAddrStr != "" {
+		return errors.New("create contract tx forbid specify 'to' address")
 	}
-	txArgs.to = common.HexToAddress(toAddrStr)
 
 	var ok bool
 	gasPriceStr := ctx.String(gasPriceFlag.Name)
@@ -156,7 +164,12 @@ func sendEthTx(ctx *cli.Context) (err error) {
 		log.Error("get account nonce success", "account", txArgs.from.String(), "nonce", nonce)
 	}
 
-	rawTx := types.NewTransaction(nonce, txArgs.to, txArgs.value, txArgs.gasLimit, txArgs.gasPrice, txArgs.input)
+	var rawTx *types.Transaction
+	if txArgs.createContract {
+		rawTx = types.NewContractCreation(nonce, txArgs.value, txArgs.gasLimit, txArgs.gasPrice, txArgs.input)
+	} else {
+		rawTx = types.NewTransaction(nonce, txArgs.to, txArgs.value, txArgs.gasLimit, txArgs.gasPrice, txArgs.input)
+	}
 	log.Info("create raw tx success")
 	_ = printTx(rawTx, true)
 

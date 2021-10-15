@@ -92,6 +92,10 @@ var (
 		Name:  "chainID",
 		Usage: "blockchain ID",
 	}
+	createContractFlag = &cli.BoolFlag{
+		Name:  "createContract",
+		Usage: "tx is to create contract",
+	}
 	fromAddrFlag = &cli.StringFlag{
 		Name:  "from",
 		Usage: "tx sender address",
