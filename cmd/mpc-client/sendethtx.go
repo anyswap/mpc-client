@@ -30,6 +30,7 @@ var (
 			gidFlag,
 			thresholdFlag,
 			signModeFlag,
+			signMemoFlag,
 			mpcServerFlag,
 			mpcKeystoreFlag,
 			mpcPasswordFlag,
@@ -166,7 +167,11 @@ func sendEthTx(ctx *cli.Context) (err error) {
 		log.Error("json marshal tx failed")
 		return err
 	}
-	msgContext := []string{"ethtx", string(txJSON)}
+	msgContext := []string{"ethtx", string(txJSON), txArgs.chainID.String()}
+	if signMemoArg != "" {
+		msgContext = append(msgContext, signMemoArg)
+	}
+
 	keyID, rsvs, err := mpcrpc.DoSign(mpcPublicKey, []string{msgHash.String()}, msgContext)
 	if err != nil {
 		log.Error("mpc sign failed", "err", err)

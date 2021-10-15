@@ -21,6 +21,18 @@ var (
 		Name:  "key",
 		Usage: "mpc sign key ID",
 	}
+	nonInteractiveFlag = &cli.BoolFlag{
+		Name:  "non-interactive",
+		Usage: "open non interactive mode",
+	}
+	agreeSignFlag = &cli.BoolFlag{
+		Name:  "agree",
+		Usage: "agree sgin non-interactively",
+	}
+	disagreeSignFlag = &cli.BoolFlag{
+		Name:  "disagree",
+		Usage: "disagree sgin non-interactively",
+	}
 	apiPrefixFlag = &cli.StringFlag{
 		Name:  "apiPrefix",
 		Usage: "mpc rpc apiPrefix",
@@ -54,6 +66,10 @@ var (
 		Name:  "mode",
 		Usage: "mpc sign mode (private=1/managed=0)",
 		Value: 0,
+	}
+	signMemoFlag = &cli.StringFlag{
+		Name:  "memo",
+		Usage: "mpc sign memo text",
 	}
 	mpcServerFlag = &cli.StringFlag{
 		Name:  "url",

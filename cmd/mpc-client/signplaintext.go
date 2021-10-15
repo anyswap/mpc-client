@@ -26,6 +26,7 @@ var (
 			gidFlag,
 			thresholdFlag,
 			signModeFlag,
+			signMemoFlag,
 			mpcServerFlag,
 			mpcKeystoreFlag,
 			mpcPasswordFlag,
@@ -49,11 +50,12 @@ func signPlainText(ctx *cli.Context) (err error) {
 		return errors.New("message hash is not the keccak256 hash of plaintext msgContext")
 	}
 
-	keyID, rsvs, err := mpcrpc.DoSign(
-		mpcPublicKey,
-		[]string{msgHashArg},
-		[]string{"plaintext", msgContextArg},
-	)
+	msgContext := []string{"plaintext", msgContextArg}
+	if signMemoArg != "" {
+		msgContext = append(msgContext, signMemoArg)
+	}
+
+	keyID, rsvs, err := mpcrpc.DoSign(mpcPublicKey, []string{msgHashArg}, msgContext)
 	if err != nil {
 		log.Error("mpc sign failed", "err", err)
 		return err

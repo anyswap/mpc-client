@@ -1,14 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/anyswap/mpc-client/cmd/utils"
 	"github.com/anyswap/mpc-client/log"
 	"github.com/anyswap/mpc-client/mpcrpc"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/urfave/cli/v2"
 )
@@ -22,6 +25,9 @@ var (
 		Description: ``,
 		Flags: []cli.Flag{
 			keyIDFlag,
+			nonInteractiveFlag,
+			agreeSignFlag,
+			disagreeSignFlag,
 			mpcServerFlag,
 			mpcKeystoreFlag,
 			mpcPasswordFlag,
@@ -31,11 +37,148 @@ var (
 	}
 )
 
+func isAllKeyID(keyID string) bool {
+	return strings.EqualFold(keyID, "all")
+}
+
+func isValidKeyID(keyID string, interactiveMode bool) bool {
+	if strings.EqualFold(common.HexToHash(keyID).String(), keyID) {
+		return true
+	}
+	return !interactiveMode && isAllKeyID(keyID)
+}
+
 func acceptSign(ctx *cli.Context) (err error) {
 	utils.SetLogger(ctx)
 	err = checkAndInitMpcConfig(ctx, false)
 	if err != nil {
 		return err
+	}
+
+	keyID := ctx.String(keyIDFlag.Name)
+	interactiveMode := !ctx.Bool(nonInteractiveFlag.Name)
+	if !isValidKeyID(keyID, interactiveMode) {
+		return fmt.Errorf("wrong keyID '%v'", keyID)
+	}
+
+	if !interactiveMode {
+		isAgree := ctx.Bool(agreeSignFlag.Name) && !ctx.Bool(disagreeSignFlag.Name) // disagree first
+		agreeResult := getAgreeResult(isAgree)
+		return doAcceptSignNoninteractively(keyID, agreeResult)
+	}
+
+	signInfo, err := getSignInfoByKeyID(keyID)
+	if err != nil {
+		return err
+	}
+
+	if len(signInfo.MsgContext) == 0 {
+		return errors.New("empty message context")
+	}
+
+	// verify message context
+	msgContextType := signInfo.MsgContext[0]
+	switch strings.ToLower(msgContextType) {
+	case "ethtx":
+		err = verifyEthTxSignInfo(signInfo)
+	case "plaintext":
+		err = verifyPlainTextSignInfo(signInfo)
+	default:
+		return fmt.Errorf("unknown message context type '%v'", msgContextType)
+	}
+	if err != nil {
+		return err
+	}
+
+	return doAcceptSignInteractively(keyID, signInfo.MsgHash, signInfo.MsgContext)
+}
+
+func verifyEthTxSignInfo(signInfo *mpcrpc.SignInfoData) (err error) {
+	msgHashes := signInfo.MsgHash
+	msgContexts := signInfo.MsgContext
+	if len(msgHashes) != 1 {
+		return errors.New("wrong message hash length, must have exact one element")
+	}
+	if len(msgContexts) < 3 {
+		return errors.New("wrong message context length, must have at least three elements")
+	}
+	msgHash := msgHashes[0]
+	msgContext := msgContexts[1]
+	chainIDStr := msgContexts[2]
+	chainID, ok := new(big.Int).SetString(chainIDStr, 0)
+	if !ok {
+		return fmt.Errorf("wrong block chainID '%v'", chainIDStr)
+	}
+	var rawTx types.Transaction
+	err = json.Unmarshal([]byte(msgContext), &rawTx)
+	if err != nil {
+		return fmt.Errorf("json unmarshal msgContext to ethtx failed. %w", err)
+	}
+	chainSigner := types.NewEIP155Signer(chainID)
+	calcedHash := chainSigner.Hash(&rawTx)
+	return checkMessageHash(calcedHash, msgHash)
+}
+
+func verifyPlainTextSignInfo(signInfo *mpcrpc.SignInfoData) (err error) {
+	msgHashes := signInfo.MsgHash
+	msgContexts := signInfo.MsgContext
+	if len(msgHashes) != 1 {
+		return errors.New("wrong message hash length, must have exact one element")
+	}
+	if len(msgContexts) < 2 {
+		return errors.New("wrong message context length, must have at least two elements")
+	}
+	msgHash := msgHashes[0]
+	msgContext := msgContexts[1]
+	calcedHash := crypto.Keccak256Hash([]byte(msgContext))
+	return checkMessageHash(calcedHash, msgHash)
+}
+
+func checkMessageHash(calcedHash common.Hash, msgHash string) error {
+	if calcedHash == common.HexToHash(msgHash) {
+		return nil
+	}
+	return fmt.Errorf("check message hash failed. msgHash=%v, calcHash=%v", msgHash, calcedHash.String())
+}
+
+func getSignInfoByKeyID(keyID string) (signInfo *mpcrpc.SignInfoData, err error) {
+	signInfos, err := mpcrpc.GetCurNodeSignInfo()
+	if err != nil {
+		log.Error("getCurNodeSignInfo failed", "err", err)
+		return nil, err
+	}
+
+	for _, info := range signInfos {
+		if info != nil && strings.EqualFold(info.Key, keyID) {
+			signInfo = info
+			break
+		}
+	}
+
+	if signInfo == nil {
+		return nil, errors.New("sign keyID is not found in accept list")
+	}
+
+	fmt.Println("message hash is", signInfo.MsgHash)
+	fmt.Println("message context is", signInfo.MsgContext)
+
+	return signInfo, nil
+}
+
+func getAgreeResult(isAgree bool) string {
+	if isAgree {
+		return "AGREE"
+	}
+	return "DISAGREE"
+}
+
+func doAcceptSignNoninteractively(keyID, agreeResult string) (err error) {
+	if !isAllKeyID(keyID) {
+		signInfo, errt := getSignInfoByKeyID(keyID)
+		if errt != nil {
+			return errt
+		}
+		return doAcceptSign(keyID, agreeResult, signInfo.MsgHash, signInfo.MsgContext)
 	}
 
 	signInfos, err := mpcrpc.GetCurNodeSignInfo()
@@ -44,46 +187,18 @@ func acceptSign(ctx *cli.Context) (err error) {
 		return err
 	}
 
-	var signInfo *mpcrpc.SignInfoData
 	for _, info := range signInfos {
-		if info != nil && strings.EqualFold(info.Key, keyIDArg) {
-			signInfo = info
-			break
-		}
+		go func(signInfo *mpcrpc.SignInfoData) {
+			errt := doAcceptSign(signInfo.Key, agreeResult, signInfo.MsgHash, signInfo.MsgContext)
+			if errt != nil {
+				log.Warn("accept sign failed", "signInfo", signInfo, "agreeResult", agreeResult, "err", err)
+			}
+		}(info)
 	}
+	return nil
+}
 
-	if signInfo == nil {
-		return errors.New("sign keyID is not found in accept list")
-	}
-
-	msgHashes := signInfo.MsgHash
-	msgContexts := signInfo.MsgContext
-	if len(msgHashes) != 1 {
-		return errors.New("wrong message hash length, must have exact one element")
-	}
-	if len(msgContexts) != 2 {
-		return errors.New("wrong message context length, must have exact two elements")
-	}
-
-	msgHash := msgHashes[0]
-	msgContext := msgContexts[1]
-
-	fmt.Println("message hash is", msgHash)
-	fmt.Println("message context is", msgContext)
-
-	// verify message context
-	msgContextType := msgContexts[0]
-	switch strings.ToLower(msgContextType) {
-	case "ethtx":
-	case "plaintext":
-		hash := crypto.Keccak256Hash([]byte(msgContext))
-		if hash != common.HexToHash(msgHash) {
-			return errors.New("message hash is not the keccak256 hash of plaintext msgContext")
-		}
-	default:
-		return fmt.Errorf("unknown message context type '%v'", msgContextType)
-	}
-
+func doAcceptSignInteractively(keyID string, msgHashes, msgContexts []string) (err error) {
 	// interaction to ask if agree or disagree
 	fmt.Printf("\nDo you agree or disagree? (y/n) ")
 	var yesno string
@@ -92,16 +207,18 @@ func acceptSign(ctx *cli.Context) (err error) {
 		return fmt.Errorf("get reply answer failed. %w", err)
 	}
 
-	agreeResult := "DISAGREE"
-	if strings.EqualFold(yesno, "y") || strings.EqualFold(yesno, "yes") {
-		agreeResult = "AGREE"
-	}
+	isAgree := strings.EqualFold(yesno, "y") || strings.EqualFold(yesno, "yes")
+	agreeResult := getAgreeResult(isAgree)
 
-	result, err := mpcrpc.DoAcceptSign(keyIDArg, agreeResult, msgHashes, msgContexts)
+	return doAcceptSign(keyID, agreeResult, msgHashes, msgContexts)
+}
+
+func doAcceptSign(keyID, agreeResult string, msgHashes, msgContexts []string) (err error) {
+	result, err := mpcrpc.DoAcceptSign(keyID, agreeResult, msgHashes, msgContexts)
 	if err != nil {
-		log.Error("mpc accept sign failed", "keyID", keyIDArg, "rpcResult", result, "err", err)
+		log.Error("mpc accept sign failed", "keyID", keyID, "rpcResult", result, "err", err)
 		return err
 	}
-	log.Info("mpc accept sign finished", "keyID", keyIDArg, "agreeResult", agreeResult, "rpcResult", result)
+	log.Info("mpc accept sign finished", "keyID", keyID, "agreeResult", agreeResult, "rpcResult", result)
 	return nil
 }

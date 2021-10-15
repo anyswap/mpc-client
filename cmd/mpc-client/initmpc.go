@@ -11,10 +11,10 @@ import (
 
 var (
 	mpcPublicKey string
-	keyIDArg     string
 
 	msgHashArg    string
 	msgContextArg string
+	signMemoArg   string
 
 	mpcCfg mpcrpc.MPCConfig
 )
@@ -42,8 +42,7 @@ func checkAndInitMpcConfig(ctx *cli.Context, isSign bool) (err error) {
 			return errors.New("wrong message hash argument")
 		}
 		msgContextArg = ctx.String(msgContextFlag.Name)
-	} else {
-		keyIDArg = ctx.String(keyIDFlag.Name)
+		signMemoArg = ctx.String(signMemoFlag.Name)
 	}
 
 	mpcrpc.Init(&mpcCfg, isSign)

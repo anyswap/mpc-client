@@ -9,7 +9,7 @@ var (
 	// LogFileFlag --log
 	LogFileFlag = &cli.StringFlag{
 		Name:  "log",
-		Usage: "Specify log file, support rotate",
+		Usage: "specify log file, support rotate",
 	}
 	// LogRotationFlag --rotate
 	LogRotationFlag = &cli.Uint64Flag{
