@@ -27,6 +27,7 @@ func initApp() {
 	app.Commands = []*cli.Command{
 		sendEthTxCommand,
 		signPlainTextCommand,
+		acceptSignCommand,
 		utils.LicenseCommand,
 		utils.VersionCommand,
 	}
