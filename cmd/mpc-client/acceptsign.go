@@ -87,10 +87,27 @@ func acceptSign(ctx *cli.Context) (err error) {
 		return fmt.Errorf("unknown message context type '%v'", msgContextType)
 	}
 	if err != nil {
-		return err
+		log.Error("message context is unresolvable", "err", err)
+		log.Info("please check the above message context manually.")
+		isContinue := askForReply("Do you still want to continue?")
+		if !isContinue {
+			return err
+		}
 	}
 
-	return doAcceptSignInteractively(keyID, signInfo.MsgHash, signInfo.MsgContext)
+	isAgree := askForReply("Do you agree this sign?")
+	agreeResult := getAgreeResult(isAgree)
+	return doAcceptSign(keyID, agreeResult, signInfo.MsgHash, signInfo.MsgContext)
+}
+
+func askForReply(prompt string) bool {
+	fmt.Printf("\n%s (y/n) ", prompt)
+	var reply string
+	_, err := fmt.Scanln(&reply)
+	if err != nil {
+		log.Fatal("get reply failed", "err", err)
+	}
+	return strings.EqualFold(reply, "y") || strings.EqualFold(reply, "yes")
 }
 
 func verifyEthTxSignInfo(signInfo *mpcrpc.SignInfoData) (err error) {
@@ -196,21 +213,6 @@ func doAcceptSignNoninteractively(keyID, agreeResult string) (err error) {
 		}(info)
 	}
 	return nil
-}
-
-func doAcceptSignInteractively(keyID string, msgHashes, msgContexts []string) (err error) {
-	// interaction to ask if agree or disagree
-	fmt.Printf("\nDo you agree or disagree? (y/n) ")
-	var yesno string
-	_, err = fmt.Scanln(&yesno)
-	if err != nil {
-		return fmt.Errorf("get reply answer failed. %w", err)
-	}
-
-	isAgree := strings.EqualFold(yesno, "y") || strings.EqualFold(yesno, "yes")
-	agreeResult := getAgreeResult(isAgree)
-
-	return doAcceptSign(keyID, agreeResult, msgHashes, msgContexts)
 }
 
 func doAcceptSign(keyID, agreeResult string, msgHashes, msgContexts []string) (err error) {
