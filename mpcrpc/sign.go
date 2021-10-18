@@ -22,6 +22,11 @@ var (
 	errWrongSignatureLength = errors.New("wrong signature length")
 )
 
+// SignContent sign content
+func SignContent(content []byte) (signature []byte, err error) {
+	return crypto.Sign(crypto.Keccak256(content), mpcKeyWrapper.PrivateKey)
+}
+
 // DoSignOne mpc sign single msgHash with context msgContext
 func DoSignOne(signPubkey, msgHash, msgContext string) (keyID string, rsvs []string, err error) {
 	return DoSign(signPubkey, []string{msgHash}, []string{msgContext})
