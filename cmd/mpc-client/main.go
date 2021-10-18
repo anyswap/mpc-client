@@ -29,6 +29,7 @@ func initApp() {
 		signPlainTextCommand,
 		acceptSignCommand,
 		getAcceptListCommand,
+		getSignStatusCommand,
 		getEnodeCommand,
 		getGroupCommand,
 		utils.LicenseCommand,
