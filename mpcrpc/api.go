@@ -98,7 +98,7 @@ func GetSignStatus(key, rpcAddr string) (*SignStatus, error) {
 // GetAcceptList get accept list of 'user'
 func GetAcceptList(user string) ([]*SignInfoData, error) {
 	var result SignInfoResp
-	err := httpPost(&result, "getAcceptList", user)
+	err := httpPost(&result, "getCurNodeSignInfo", user)
 	if err != nil {
 		return nil, wrapPostError("getAcceptList", err)
 	}

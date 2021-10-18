@@ -34,6 +34,6 @@ func getEnode(ctx *cli.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println("enode is ", enode)
+	fmt.Println("enode is", enode)
 	return nil
 }
