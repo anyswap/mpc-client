@@ -75,6 +75,10 @@ var (
 		Name:  "url",
 		Usage: "mpc server URL",
 	}
+	mpcUserFlag = &cli.StringFlag{
+		Name:  "user",
+		Usage: "mpc user address",
+	}
 	mpcKeystoreFlag = &cli.StringFlag{
 		Name:  "keystore",
 		Usage: "mpc user keystore file",

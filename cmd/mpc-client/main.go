@@ -28,6 +28,7 @@ func initApp() {
 		sendEthTxCommand,
 		signPlainTextCommand,
 		acceptSignCommand,
+		getAcceptListCommand,
 		getEnodeCommand,
 		utils.LicenseCommand,
 		utils.VersionCommand,
