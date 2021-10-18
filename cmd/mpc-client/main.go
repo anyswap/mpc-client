@@ -30,6 +30,7 @@ func initApp() {
 		acceptSignCommand,
 		getAcceptListCommand,
 		getEnodeCommand,
+		getGroupCommand,
 		utils.LicenseCommand,
 		utils.VersionCommand,
 	}

@@ -57,6 +57,10 @@ var (
 		Name:  "gid",
 		Usage: "mpc sign group ID",
 	}
+	groupIDFlag = &cli.StringFlag{
+		Name:  "gid",
+		Usage: "mpc group ID",
+	}
 	thresholdFlag = &cli.StringFlag{
 		Name:  "ts",
 		Usage: "mpc sign threshold",
