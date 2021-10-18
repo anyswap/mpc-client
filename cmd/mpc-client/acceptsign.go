@@ -50,6 +50,7 @@ func isValidKeyID(keyID string, interactiveMode bool) bool {
 
 func acceptSign(ctx *cli.Context) (err error) {
 	utils.SetLogger(ctx)
+	mpcCfg.NeedKeyStore = true
 	err = checkAndInitMpcConfig(ctx, false)
 	if err != nil {
 		return err

@@ -40,6 +40,7 @@ var (
 
 func signPlainText(ctx *cli.Context) (err error) {
 	utils.SetLogger(ctx)
+	mpcCfg.NeedKeyStore = true
 	err = checkAndInitMpcConfig(ctx, true)
 	if err != nil {
 		return err

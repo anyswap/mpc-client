@@ -42,6 +42,7 @@ type MPCConfig struct {
 	RPCTimeout   uint64
 	KeystoreFile string `json:"-"`
 	PasswordFile string `json:"-"`
+	NeedKeyStore bool   `json:"-"`
 
 	SignTimeout uint64
 	SignType    string // eg. ECDSA
@@ -71,14 +72,17 @@ func initRPC(mpcConfig *MPCConfig) {
 		log.Fatal("init mpc rpc failes, must specify mpc rpc url")
 	}
 
-	key, err := tools.LoadKeyStore(mpcConfig.KeystoreFile, mpcConfig.PasswordFile)
-	if err != nil {
-		log.Fatal("load mpc user keystore failed", "err", err)
+	if mpcConfig.NeedKeyStore {
+		key, err := tools.LoadKeyStore(mpcConfig.KeystoreFile, mpcConfig.PasswordFile)
+		if err != nil {
+			log.Fatal("load mpc user keystore failed", "err", err)
+		}
+		mpcKeyWrapper = key
+		mpcUser = key.Address
+		log.Info("load mpc user keystore success", "mpcUser", mpcUser.String())
 	}
-	mpcKeyWrapper = key
-	mpcUser = key.Address
 
-	log.Info("init mpc rpc success", "apiPrefix", mpcAPIPrefix, "rpcAddress", mpcRPCAddress, "rpcTimeout", mpcRPCTimeout, "mpcUser", mpcUser)
+	log.Info("init mpc rpc success", "apiPrefix", mpcAPIPrefix, "rpcAddress", mpcRPCAddress, "rpcTimeout", mpcRPCTimeout)
 }
 
 func initSign(mpcConfig *MPCConfig) {

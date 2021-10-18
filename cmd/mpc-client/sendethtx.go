@@ -137,6 +137,7 @@ func checkSendEthTxArguments(ctx *cli.Context) (err error) {
 
 func sendEthTx(ctx *cli.Context) (err error) {
 	utils.SetLogger(ctx)
+	mpcCfg.NeedKeyStore = true
 	err = checkAndInitMpcConfig(ctx, true)
 	if err != nil {
 		return err
