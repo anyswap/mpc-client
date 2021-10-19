@@ -85,7 +85,7 @@ func acceptSign(ctx *cli.Context) (err error) {
 	case "plaintext":
 		err = verifyPlainTextSignInfo(signInfo)
 	default:
-		return fmt.Errorf("unknown message context type '%v'", msgContextType)
+		err = fmt.Errorf("unknown message context type")
 	}
 	if err != nil {
 		log.Error("message context is unresolvable", "err", err)
