@@ -42,5 +42,6 @@ func getAcceptList(ctx *cli.Context) (err error) {
 		return err
 	}
 	fmt.Println(string(jsData))
+	fmt.Println("accept list length is", len(accpetList))
 	return nil
 }
