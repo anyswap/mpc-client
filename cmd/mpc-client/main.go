@@ -29,7 +29,6 @@ func initApp() {
 		signPlainTextCommand,
 		sendEthTxCommand,
 		acceptSignCommand,
-		acceptDKGCommand,
 		getAcceptListCommand,
 		getSignStatusCommand,
 		getEnodeCommand,

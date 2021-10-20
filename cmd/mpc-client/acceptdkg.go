@@ -6,47 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/anyswap/mpc-client/cmd/utils"
 	"github.com/anyswap/mpc-client/log"
 	"github.com/anyswap/mpc-client/mpcrpc"
 	"github.com/urfave/cli/v2"
 )
 
-var (
-	acceptDKGCommand = &cli.Command{
-		Action:      acceptDKG,
-		Name:        "acceptdkg",
-		Usage:       "start accept dkg interaction",
-		ArgsUsage:   "",
-		Description: ``,
-		Flags: []cli.Flag{
-			keyIDFlag,
-			nonInteractiveFlag,
-			agreeSignFlag,
-			disagreeSignFlag,
-			mpcServerFlag,
-			mpcKeystoreFlag,
-			mpcPasswordFlag,
-			apiPrefixFlag,
-			rpcTimeoutFlag,
-		},
-	}
-)
-
 func acceptDKG(ctx *cli.Context) (err error) {
-	utils.SetLogger(ctx)
-	mpcCfg.NeedKeyStore = true
-	err = checkAndInitMpcConfig(ctx, false)
-	if err != nil {
-		return err
-	}
-
 	keyID := ctx.String(keyIDFlag.Name)
 	interactiveMode := !ctx.Bool(nonInteractiveFlag.Name)
-	if !isValidKeyID(keyID, interactiveMode) {
-		return fmt.Errorf("wrong keyID '%v'", keyID)
-	}
-
 	if !interactiveMode {
 		isAgree := ctx.Bool(agreeSignFlag.Name) && !ctx.Bool(disagreeSignFlag.Name) // disagree first
 		agreeResult := getAgreeResult(isAgree)

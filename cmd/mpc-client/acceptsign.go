@@ -25,6 +25,7 @@ var (
 		Description: ``,
 		Flags: []cli.Flag{
 			keyIDFlag,
+			mpcDKGFlag,
 			nonInteractiveFlag,
 			agreeSignFlag,
 			disagreeSignFlag,
@@ -60,6 +61,11 @@ func acceptSign(ctx *cli.Context) (err error) {
 	interactiveMode := !ctx.Bool(nonInteractiveFlag.Name)
 	if !isValidKeyID(keyID, interactiveMode) {
 		return fmt.Errorf("wrong keyID '%v'", keyID)
+	}
+
+	isDKG := ctx.Bool(mpcDKGFlag.Name)
+	if isDKG {
+		return acceptDKG(ctx)
 	}
 
 	if !interactiveMode {
