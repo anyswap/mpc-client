@@ -13,6 +13,8 @@ import (
 var (
 	ErrGetSignStatusTimeout = errors.New("getSignStatus timeout")
 	ErrGetSignStatusFailed  = errors.New("getSignStatus failure")
+	ErrGetDKGStatusTimeout  = errors.New("getDKGStatus timeout")
+	ErrGetDKGStatusFailed   = errors.New("getDKGStatus failure")
 )
 
 const (
@@ -158,4 +160,90 @@ func GetGroupByID(groupID, rpcAddr string) (*GroupInfo, error) {
 		return nil, newWrongStatusError("getGroupByID", result.Status, result.Error)
 	}
 	return result.Data, nil
+}
+
+// ReqDcrmAddr call reqDcrmAddr
+func ReqDcrmAddr(raw, rpcAddr string) (string, error) {
+	var result DataResultResp
+	err := httpPostTo(&result, rpcAddr, "reqDcrmAddr", raw)
+	if err != nil {
+		return "", wrapPostError("reqDcrmAddr", err)
+	}
+	if result.Status != successStatus {
+		return "", newWrongStatusError("reqDcrmAddr", result.Status, result.Error)
+	}
+	return result.Data.Result, nil
+}
+
+// GetReqAddrNonce call getReqAddrNonce
+func GetReqAddrNonce(mpcUser, rpcAddr string) (uint64, error) {
+	var result DataResultResp
+	err := httpPostTo(&result, rpcAddr, "getReqAddrNonce", mpcUser)
+	if err != nil {
+		return 0, wrapPostError("getReqAddrNonce", err)
+	}
+	if result.Status != successStatus {
+		return 0, newWrongStatusError("getReqAddrNonce", result.Status, result.Error)
+	}
+	bi, err := GetBigIntFromStr(result.Data.Result)
+	if err != nil {
+		return 0, fmt.Errorf("getReqAddrNonce can't parse result as big int, %w", err)
+	}
+	return bi.Uint64(), nil
+}
+
+// GetReqAddrStatus call getReqAddrStatus
+func GetReqAddrStatus(key, rpcAddr string) (*ReqAddrStatus, error) {
+	var result DataResultResp
+	err := httpPostTo(&result, rpcAddr, "getReqAddrStatus", key)
+	if err != nil {
+		return nil, wrapPostError("getReqAddrStatus", err)
+	}
+	if result.Status != successStatus {
+		return nil, newWrongStatusError("getReqAddrStatus", result.Status, "response error "+result.Error)
+	}
+	data := result.Data.Result
+	var reqAddrStatus ReqAddrStatus
+	err = json.Unmarshal([]byte(data), &reqAddrStatus)
+	if err != nil {
+		return nil, wrapPostError("getReqAddrStatus", err)
+	}
+	switch reqAddrStatus.Status {
+	case "Failure":
+		log.Info("getReqAddrStatus Failure", "keyID", key, "status", data)
+		return nil, ErrGetDKGStatusFailed
+	case "Timeout":
+		log.Info("getReqAddrStatus Timeout", "keyID", key, "status", data)
+		return nil, ErrGetDKGStatusTimeout
+	case successStatus:
+		return &reqAddrStatus, nil
+	default:
+		return nil, newWrongStatusError("getReqAddrStatus", reqAddrStatus.Status, "sign status error "+reqAddrStatus.Error)
+	}
+}
+
+// GetCurNodeReqAddrInfo call getCurNodeReqAddrInfo
+func GetCurNodeReqAddrInfo() ([]*ReqAddrInfoData, error) {
+	var result ReqAddrInfoResp
+	err := httpPost(&result, "getCurNodeReqAddrInfo", mpcKeyWrapper.Address.String())
+	if err != nil {
+		return nil, wrapPostError("getCurNodeReqAddrInfo", err)
+	}
+	if result.Status != successStatus {
+		return nil, newWrongStatusError("getCurNodeReqAddrInfo", result.Status, result.Error)
+	}
+	return result.Data, nil
+}
+
+// GetAccounts call getAccounts
+func GetAccounts(addr string) (*PubAccounts, error) {
+	var result AccountInfoResp
+	err := httpPost(&result, "getAccounts", addr, "0")
+	if err != nil {
+		return nil, wrapPostError("getAccounts", err)
+	}
+	if result.Status != successStatus {
+		return nil, newWrongStatusError("getAccounts", result.Status, "response error "+result.Error)
+	}
+	return result.Data.Result, nil
 }
