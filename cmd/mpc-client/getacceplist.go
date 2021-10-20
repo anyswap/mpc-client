@@ -19,6 +19,7 @@ var (
 		Flags: []cli.Flag{
 			mpcUserFlag,
 			mpcServerFlag,
+			mpcDKGFlag,
 			apiPrefixFlag,
 			rpcTimeoutFlag,
 		},
@@ -33,15 +34,29 @@ func getAcceptList(ctx *cli.Context) (err error) {
 	}
 
 	user := ctx.String(mpcUserFlag.Name)
-	accpetList, err := mpcrpc.GetAcceptList(user)
-	if err != nil {
-		return err
+	isDKG := ctx.Bool(mpcDKGFlag.Name)
+	if isDKG {
+		accpetList, err := mpcrpc.GetDKGAcceptList(user)
+		if err != nil {
+			return err
+		}
+		jsData, err := json.MarshalIndent(accpetList, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsData))
+		fmt.Println("accept list length is", len(accpetList))
+	} else {
+		accpetList, err := mpcrpc.GetAcceptList(user)
+		if err != nil {
+			return err
+		}
+		jsData, err := json.MarshalIndent(accpetList, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsData))
+		fmt.Println("accept list length is", len(accpetList))
 	}
-	jsData, err := json.MarshalIndent(accpetList, "", "  ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(jsData))
-	fmt.Println("accept list length is", len(accpetList))
 	return nil
 }

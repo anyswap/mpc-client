@@ -222,6 +222,19 @@ func GetReqAddrStatus(key, rpcAddr string) (*ReqAddrStatus, error) {
 	}
 }
 
+// GetDKGAcceptList get dkg accept list
+func GetDKGAcceptList(user string) ([]*ReqAddrInfoData, error) {
+	var result ReqAddrInfoResp
+	err := httpPost(&result, "getCurNodeReqAddrInfo", user)
+	if err != nil {
+		return nil, wrapPostError("getDKGAcceptList", err)
+	}
+	if result.Status != successStatus {
+		return nil, newWrongStatusError("getDKGAcceptList", result.Status, result.Error)
+	}
+	return result.Data, nil
+}
+
 // GetCurNodeReqAddrInfo call getCurNodeReqAddrInfo
 func GetCurNodeReqAddrInfo() ([]*ReqAddrInfoData, error) {
 	var result ReqAddrInfoResp

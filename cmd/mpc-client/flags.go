@@ -91,6 +91,10 @@ var (
 		Name:  "passwd",
 		Usage: "mpc user password file",
 	}
+	mpcDKGFlag = &cli.BoolFlag{
+		Name:  "dkg",
+		Usage: "is mpc public key generation",
+	}
 
 	gatewayFlag = &cli.StringFlag{
 		Name:  "gateway",
