@@ -6,8 +6,8 @@ import (
 	"github.com/anyswap/mpc-client/log"
 )
 
-func acceptSign(txType, keyID, agreeResult string, msgHash, msgContext []string) (string, error) {
-	log.Info("acceptSign", "txType", txType, "keyID", keyID, "agreeResult", agreeResult, "msgHash", msgHash, "msgContext", msgContext)
+func buildAcceptTx(txType, keyID, agreeResult string, msgHash, msgContext []string) (string, error) {
+	log.Info("buildAcceptTx", "txType", txType, "keyID", keyID, "agreeResult", agreeResult, "msgHash", msgHash, "msgContext", msgContext)
 	nonce := uint64(0)
 	data := AcceptData{
 		TxType:  txType,
@@ -21,19 +21,23 @@ func acceptSign(txType, keyID, agreeResult string, msgHash, msgContext []string)
 	if err != nil {
 		return "", err
 	}
-	rawTX, err := BuildMPCRawTx(nonce, payload)
+	return BuildMPCRawTx(nonce, payload)
+}
+
+// DoAcceptSign accept sign
+func DoAcceptSign(keyID, agreeResult string, msgHash, msgContext []string) (string, error) {
+	rawTX, err := buildAcceptTx("ACCEPTSIGN", keyID, agreeResult, msgHash, msgContext)
 	if err != nil {
 		return "", err
 	}
 	return AcceptSign(rawTX)
 }
 
-// DoAcceptSign accept sign
-func DoAcceptSign(keyID, agreeResult string, msgHash, msgContext []string) (string, error) {
-	return acceptSign("ACCEPTSIGN", keyID, agreeResult, msgHash, msgContext)
-}
-
 // DoAcceptReqAddr accept request address
-func DoAcceptReqAddr(keyID, agreeResult string, msgHash, msgContext []string) (string, error) {
-	return acceptSign("ACCEPTREQADDR", keyID, agreeResult, msgHash, msgContext)
+func DoAcceptReqAddr(keyID, agreeResult string) (string, error) {
+	rawTX, err := buildAcceptTx("ACCEPTREQADDR", keyID, agreeResult, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	return AcceptReqAddr(rawTX)
 }

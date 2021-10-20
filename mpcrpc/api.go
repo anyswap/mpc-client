@@ -175,6 +175,19 @@ func ReqDcrmAddr(raw, rpcAddr string) (string, error) {
 	return result.Data.Result, nil
 }
 
+// AcceptReqAddr call acceptReqAddr
+func AcceptReqAddr(raw string) (string, error) {
+	var result DataResultResp
+	err := httpPost(&result, "acceptReqAddr", raw)
+	if err != nil {
+		return "", wrapPostError("acceptReqAddr", err)
+	}
+	if result.Status != successStatus {
+		return "", newWrongStatusError("acceptReqAddr", result.Status, result.Error)
+	}
+	return result.Data.Result, nil
+}
+
 // GetReqAddrNonce call getReqAddrNonce
 func GetReqAddrNonce(mpcUser, rpcAddr string) (uint64, error) {
 	var result DataResultResp
