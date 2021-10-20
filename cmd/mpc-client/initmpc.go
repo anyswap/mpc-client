@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 
+	"github.com/BurntSushi/toml"
+	"github.com/anyswap/mpc-client/cmd/utils"
+	"github.com/anyswap/mpc-client/log"
 	"github.com/anyswap/mpc-client/mpcrpc"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/urfave/cli/v2"
@@ -31,7 +35,8 @@ func checkAndInitMpcConfig(ctx *cli.Context, isSign bool) (err error) {
 		mpcCfg.SignType = ctx.String(signTypeFlag.Name)
 		mpcCfg.SignGroup = ctx.String(gidFlag.Name)
 		mpcCfg.Threshold = ctx.String(thresholdFlag.Name)
-		mpcCfg.Mode = ctx.Uint64(signModeFlag.Name)
+		signMode := ctx.Uint64(signModeFlag.Name)
+		mpcCfg.Mode = &signMode
 
 		mpcPublicKey = ctx.String(pubkeyFlag.Name)
 		if mpcPublicKey == "" {
@@ -45,6 +50,74 @@ func checkAndInitMpcConfig(ctx *cli.Context, isSign bool) (err error) {
 		signMemoArg = ctx.String(signMemoFlag.Name)
 	}
 
+	mergeConfigFromConfigFile(ctx)
+
 	mpcrpc.Init(&mpcCfg, isSign)
 	return nil
+}
+
+func mergeConfigFromConfigFile(ctx *cli.Context) {
+	configFile := utils.GetConfigFilePath(ctx)
+	if configFile == "" {
+		return
+	}
+	config := loadConfigFile(configFile)
+	if config == nil {
+		return
+	}
+
+	if config.MPC.APIPrefix != "" && !ctx.IsSet(apiPrefixFlag.Name) {
+		mpcCfg.APIPrefix = config.MPC.APIPrefix
+	}
+	if config.MPC.RPCAddress != "" && !ctx.IsSet(mpcServerFlag.Name) {
+		mpcCfg.RPCAddress = config.MPC.RPCAddress
+	}
+	if config.MPC.RPCTimeout != 0 && !ctx.IsSet(rpcTimeoutFlag.Name) {
+		mpcCfg.RPCTimeout = config.MPC.RPCTimeout
+	}
+	if config.MPC.KeystoreFile != "" && !ctx.IsSet(mpcKeystoreFlag.Name) {
+		mpcCfg.KeystoreFile = config.MPC.KeystoreFile
+	}
+	if config.MPC.PasswordFile != "" && !ctx.IsSet(mpcPasswordFlag.Name) {
+		mpcCfg.PasswordFile = mpcCfg.KeystoreFile
+	}
+	if config.MPC.SignTimeout != 0 && !ctx.IsSet(signTimeoutFlag.Name) {
+		mpcCfg.SignTimeout = config.MPC.SignTimeout
+	}
+	if config.MPC.SignType != "" && !ctx.IsSet(signTypeFlag.Name) {
+		mpcCfg.SignType = config.MPC.SignType
+	}
+	if config.MPC.SignGroup != "" && !ctx.IsSet(gidFlag.Name) {
+		mpcCfg.SignGroup = config.MPC.SignGroup
+	}
+	if config.MPC.Threshold != "" && !ctx.IsSet(thresholdFlag.Name) {
+		mpcCfg.Threshold = config.MPC.Threshold
+	}
+	if config.MPC.Mode != nil && !ctx.IsSet(signModeFlag.Name) {
+		mpcCfg.Mode = config.MPC.Mode
+	}
+}
+
+// Config toml config
+type Config struct {
+	MPC *mpcrpc.MPCConfig
+}
+
+func loadConfigFile(configFile string) (config *Config) {
+	log.Info("load config file", "configFile", configFile)
+	if !common.FileExist(configFile) {
+		log.Fatalf("config file '%v' not exist", configFile)
+	}
+	if _, err := toml.DecodeFile(configFile, &config); err != nil {
+		log.Fatalf("load config file error (toml DecodeFile): %v", err)
+	}
+
+	var bs []byte
+	if log.JSONFormat {
+		bs, _ = json.Marshal(config)
+	} else {
+		bs, _ = json.MarshalIndent(config, "", "  ")
+	}
+	log.Println("load config file finished.", string(bs))
+	return config
 }

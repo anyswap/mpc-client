@@ -38,10 +38,11 @@ func initApp() {
 		utils.VersionCommand,
 	}
 	app.Flags = []cli.Flag{
+		utils.ConfigFileFlag,
+		utils.VerbosityFlag,
 		utils.LogFileFlag,
 		utils.LogRotationFlag,
 		utils.LogMaxAgeFlag,
-		utils.VerbosityFlag,
 		utils.JSONFormatFlag,
 		utils.ColorFormatFlag,
 	}

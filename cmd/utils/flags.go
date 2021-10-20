@@ -6,6 +6,12 @@ import (
 )
 
 var (
+	// ConfigFileFlag -c|--config
+	ConfigFileFlag = &cli.StringFlag{
+		Name:    "config",
+		Aliases: []string{"c"},
+		Usage:   "specify config file",
+	}
 	// LogFileFlag --log
 	LogFileFlag = &cli.StringFlag{
 		Name:  "log",
@@ -56,4 +62,9 @@ func SetLogger(ctx *cli.Context) {
 		logMaxAge := ctx.Uint64(LogMaxAgeFlag.Name)
 		log.SetLogFile(logFile, logRotation, logMaxAge)
 	}
+}
+
+// GetConfigFilePath specified by `-c|--config`
+func GetConfigFilePath(ctx *cli.Context) string {
+	return ctx.String(ConfigFileFlag.Name)
 }

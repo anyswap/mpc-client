@@ -3,6 +3,7 @@ module github.com/anyswap/mpc-client
 go 1.17
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/ethereum/go-ethereum v1.10.9
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/sirupsen/logrus v1.8.1

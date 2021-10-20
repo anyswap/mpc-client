@@ -1,0 +1,16 @@
+# Notice: command line arguments has precedence than config file
+
+# MPC config
+[MPC]
+APIPrefix = "dcrm_"
+RPCAddress = "http://127.0.0.1:1234"
+RPCTimeout = 20
+
+KeystoreFile = "keystore file"
+PasswordFile = "password file"
+
+SignTimeout = 120
+SignType = "ECDSA"
+SignGroup = ""
+Threshold = "3/5"
+Mode = 0

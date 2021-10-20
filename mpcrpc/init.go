@@ -48,13 +48,13 @@ type MPCConfig struct {
 	SignType    string // eg. ECDSA
 	SignGroup   string
 	Threshold   string
-	Mode        uint64 // 0:managed 1:private
+	Mode        *uint64 // 0:managed 1:private
 }
 
 // Init init mpc
 func Init(mpcConfig *MPCConfig, isSign bool) {
 	initRPC(mpcConfig)
-	if isSign {
+	if isSign || mpcConfig.SignGroup != "" {
 		initSign(mpcConfig)
 	}
 }
@@ -72,7 +72,7 @@ func initRPC(mpcConfig *MPCConfig) {
 		log.Fatal("init mpc rpc failes, must specify mpc rpc url")
 	}
 
-	if mpcConfig.NeedKeyStore {
+	if mpcConfig.NeedKeyStore || mpcConfig.KeystoreFile != "" {
 		key, err := tools.LoadKeyStore(mpcConfig.KeystoreFile, mpcConfig.PasswordFile)
 		if err != nil {
 			log.Fatal("load mpc user keystore failed", "err", err)
@@ -94,7 +94,7 @@ func initSign(mpcConfig *MPCConfig) {
 	}
 	mpcSignGroup = mpcConfig.SignGroup
 	mpcThreshold = mpcConfig.Threshold
-	mpcMode = fmt.Sprintf("%d", mpcConfig.Mode)
+	mpcMode = fmt.Sprintf("%d", *mpcConfig.Mode)
 
 	if mpcSignGroup == "" || mpcThreshold == "" {
 		log.Fatal("init mpc sign failed, must specify sign group and threshold")
