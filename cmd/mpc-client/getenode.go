@@ -28,6 +28,10 @@ var (
 
 func getEnode(ctx *cli.Context) (err error) {
 	utils.SetLogger(ctx)
+	showEnodeSig := ctx.Bool(showEnodeSigFlag.Name)
+	if showEnodeSig {
+		mpcCfg.NeedKeyStore = true
+	}
 	err = checkAndInitMpcConfig(ctx, false)
 	if err != nil {
 		return err
@@ -39,7 +43,6 @@ func getEnode(ctx *cli.Context) (err error) {
 	}
 	fmt.Println("enode is", enode)
 
-	showEnodeSig := ctx.Bool(showEnodeSigFlag.Name)
 	if !showEnodeSig {
 		return nil
 	}
