@@ -95,10 +95,6 @@ var (
 		Name:  "dkg",
 		Usage: "is mpc public key generation",
 	}
-	addressFlag = &cli.StringFlag{
-		Name:  "address",
-		Usage: "address",
-	}
 	enodeSigsFlag = &cli.StringSliceFlag{
 		Name:  "sig",
 		Usage: "group member enodes sigs",

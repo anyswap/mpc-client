@@ -17,7 +17,7 @@ var (
 		ArgsUsage:   "",
 		Description: ``,
 		Flags: []cli.Flag{
-			addressFlag,
+			mpcUserFlag,
 			signModeFlag,
 			mpcServerFlag,
 			apiPrefixFlag,
@@ -33,8 +33,8 @@ func getAccounts(ctx *cli.Context) (err error) {
 		return err
 	}
 
-	address := ctx.String(addressFlag.Name)
-	accoutsInfo, err := mpcrpc.GetAccounts(address)
+	user := ctx.String(mpcUserFlag.Name)
+	accoutsInfo, err := mpcrpc.GetAccounts(user)
 	if err != nil {
 		return err
 	}
