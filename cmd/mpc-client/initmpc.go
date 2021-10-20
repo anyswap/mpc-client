@@ -79,7 +79,7 @@ func mergeConfigFromConfigFile(ctx *cli.Context) {
 		mpcCfg.KeystoreFile = config.MPC.KeystoreFile
 	}
 	if config.MPC.PasswordFile != "" && !ctx.IsSet(mpcPasswordFlag.Name) {
-		mpcCfg.PasswordFile = mpcCfg.KeystoreFile
+		mpcCfg.PasswordFile = config.MPC.PasswordFile
 	}
 	if config.MPC.SignTimeout != 0 && !ctx.IsSet(signTimeoutFlag.Name) {
 		mpcCfg.SignTimeout = config.MPC.SignTimeout

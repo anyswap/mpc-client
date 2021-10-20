@@ -100,6 +100,9 @@ func GetSignStatus(key, rpcAddr string) (*SignStatus, error) {
 // GetAcceptList get accept list of 'user'
 func GetAcceptList(user string) ([]*SignInfoData, error) {
 	var result SignInfoResp
+	if user == "" && mpcKeyWrapper != nil {
+		user = mpcKeyWrapper.Address.String()
+	}
 	err := httpPost(&result, "getCurNodeSignInfo", user)
 	if err != nil {
 		return nil, wrapPostError("getAcceptList", err)
@@ -238,6 +241,9 @@ func GetReqAddrStatus(key, rpcAddr string) (*ReqAddrStatus, error) {
 // GetDKGAcceptList get dkg accept list
 func GetDKGAcceptList(user string) ([]*ReqAddrInfoData, error) {
 	var result ReqAddrInfoResp
+	if user == "" && mpcKeyWrapper != nil {
+		user = mpcKeyWrapper.Address.String()
+	}
 	err := httpPost(&result, "getCurNodeReqAddrInfo", user)
 	if err != nil {
 		return nil, wrapPostError("getDKGAcceptList", err)
