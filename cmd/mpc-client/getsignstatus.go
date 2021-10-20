@@ -19,6 +19,7 @@ var (
 		Flags: []cli.Flag{
 			keyIDFlag,
 			mpcServerFlag,
+			mpcDKGFlag,
 			apiPrefixFlag,
 			rpcTimeoutFlag,
 		},
@@ -33,15 +34,29 @@ func getSignStatus(ctx *cli.Context) (err error) {
 	}
 
 	keyID := ctx.String(keyIDFlag.Name)
-	signStatus, err := mpcrpc.GetSignStatus(keyID, mpcCfg.RPCAddress)
-	if err != nil {
-		return err
-	}
+	isDKG := ctx.Bool(mpcDKGFlag.Name)
+	if isDKG {
+		dkgStatus, err := mpcrpc.GetReqAddrStatus(keyID, mpcCfg.RPCAddress)
+		if err != nil {
+			return err
+		}
 
-	jsData, err := json.MarshalIndent(signStatus, "", "  ")
-	if err != nil {
-		return err
+		jsData, err := json.MarshalIndent(dkgStatus, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsData))
+	} else {
+		signStatus, err := mpcrpc.GetSignStatus(keyID, mpcCfg.RPCAddress)
+		if err != nil {
+			return err
+		}
+
+		jsData, err := json.MarshalIndent(signStatus, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsData))
 	}
-	fmt.Println(string(jsData))
 	return nil
 }
