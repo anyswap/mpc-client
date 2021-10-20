@@ -18,6 +18,7 @@ var (
 		Description: ``,
 		Flags: []cli.Flag{
 			addressFlag,
+			signModeFlag,
 			mpcServerFlag,
 			apiPrefixFlag,
 			rpcTimeoutFlag,

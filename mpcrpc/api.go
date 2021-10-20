@@ -264,7 +264,7 @@ func GetCurNodeReqAddrInfo() ([]*ReqAddrInfoData, error) {
 // GetAccounts call getAccounts
 func GetAccounts(addr string) (*PubAccounts, error) {
 	var result AccountInfoResp
-	err := httpPost(&result, "getAccounts", addr, "0")
+	err := httpPost(&result, "getAccounts", addr, mpcMode)
 	if err != nil {
 		return nil, wrapPostError("getAccounts", err)
 	}
