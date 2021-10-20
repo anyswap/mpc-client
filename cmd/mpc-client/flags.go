@@ -103,6 +103,10 @@ var (
 		Name:  "sig",
 		Usage: "group member enodes sigs",
 	}
+	showEnodeSigFlag = &cli.BoolFlag{
+		Name:  "sig",
+		Usage: "show enode sig",
+	}
 
 	gatewayFlag = &cli.StringFlag{
 		Name:  "gateway",
