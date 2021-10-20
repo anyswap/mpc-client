@@ -95,6 +95,10 @@ var (
 		Name:  "dkg",
 		Usage: "is mpc public key generation",
 	}
+	addressFlag = &cli.StringFlag{
+		Name:  "address",
+		Usage: "address",
+	}
 
 	gatewayFlag = &cli.StringFlag{
 		Name:  "gateway",
