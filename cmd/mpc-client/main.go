@@ -25,6 +25,7 @@ func initApp() {
 	app.HideVersion = true // we have a command to print the version
 	app.Copyright = "Copyright 2020-2021 The MPC-Client Authors"
 	app.Commands = []*cli.Command{
+		doDKGCommand,
 		signPlainTextCommand,
 		sendEthTxCommand,
 		acceptSignCommand,

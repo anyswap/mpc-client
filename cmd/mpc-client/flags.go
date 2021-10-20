@@ -99,6 +99,10 @@ var (
 		Name:  "address",
 		Usage: "address",
 	}
+	enodeSigsFlag = &cli.StringSliceFlag{
+		Name:  "sig",
+		Usage: "group member enodes sigs",
+	}
 
 	gatewayFlag = &cli.StringFlag{
 		Name:  "gateway",
