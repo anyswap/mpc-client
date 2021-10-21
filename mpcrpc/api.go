@@ -266,19 +266,3 @@ func GetCurNodeReqAddrInfo() ([]*ReqAddrInfoData, error) {
 	}
 	return result.Data, nil
 }
-
-// GetAccounts call getAccounts
-func GetAccounts(user string) (*PubAccounts, error) {
-	var result AccountInfoResp
-	if user == "" && mpcKeyWrapper != nil {
-		user = mpcKeyWrapper.Address.String()
-	}
-	err := httpPost(&result, "getAccounts", user, mpcMode)
-	if err != nil {
-		return nil, wrapPostError("getAccounts", err)
-	}
-	if result.Status != successStatus {
-		return nil, newWrongStatusError("getAccounts", result.Status, "response error "+result.Error)
-	}
-	return result.Data.Result, nil
-}

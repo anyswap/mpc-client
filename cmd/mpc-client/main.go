@@ -33,7 +33,6 @@ func initApp() {
 		getSignStatusCommand,
 		getEnodeCommand,
 		getGroupCommand,
-		getAccountsCommand,
 		utils.LicenseCommand,
 		utils.VersionCommand,
 	}

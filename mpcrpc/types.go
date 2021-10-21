@@ -144,34 +144,3 @@ type ReqAddrInfoResp struct {
 	Error  string
 	Data   []*ReqAddrInfoData
 }
-
-// AccountInfoResp account info response
-type AccountInfoResp struct {
-	Status string
-	Tip    string
-	Error  string
-	Data   *AccountsResult
-}
-
-// AccountsResult accounts result
-type AccountsResult struct {
-	Result *PubAccounts `json:"result"`
-}
-
-// PubAccounts pub accounts
-type PubAccounts struct {
-	Group []AccountsList
-}
-
-// AccountsList account list
-type AccountsList struct {
-	GroupID  string
-	Accounts []PubKeyInfo
-}
-
-// PubKeyInfo pubkey info
-type PubKeyInfo struct {
-	PubKey    string
-	ThresHold string
-	TimeStamp string
-}
