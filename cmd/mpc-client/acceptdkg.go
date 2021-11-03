@@ -31,7 +31,7 @@ func acceptDKG(ctx *cli.Context) (err error) {
 }
 
 func getDKGInfoByKeyID(keyID string) (dkgInfo *mpcrpc.ReqAddrInfoData, err error) {
-	dkgInfos, err := mpcrpc.GetCurNodeReqAddrInfo()
+	dkgInfos, err := mpcrpc.GetCurNodeReqAddrInfo(0)
 	if err != nil {
 		log.Error("getCurNodeReqAddrInfo failed", "err", err)
 		return nil, err
@@ -67,7 +67,7 @@ func doAcceptDKGNoninteractively(keyID, agreeResult string) (err error) {
 		return doAcceptDKG(keyID, agreeResult)
 	}
 
-	dkgInfos, err := mpcrpc.GetCurNodeReqAddrInfo()
+	dkgInfos, err := mpcrpc.GetCurNodeReqAddrInfo(0)
 	if err != nil {
 		log.Error("getCurNodeReqAddrInfo failed", "err", err)
 		return err

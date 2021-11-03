@@ -166,7 +166,7 @@ func checkMessageHash(calcedHash common.Hash, msgHash string) error {
 }
 
 func getSignInfoByKeyID(keyID string) (signInfo *mpcrpc.SignInfoData, err error) {
-	signInfos, err := mpcrpc.GetCurNodeSignInfo()
+	signInfos, err := mpcrpc.GetCurNodeSignInfo(0)
 	if err != nil {
 		log.Error("getCurNodeSignInfo failed", "err", err)
 		return nil, err
@@ -205,7 +205,7 @@ func doAcceptSignNoninteractively(keyID, agreeResult string) (err error) {
 		return doAcceptSign(keyID, agreeResult, signInfo.MsgHash, signInfo.MsgContext)
 	}
 
-	signInfos, err := mpcrpc.GetCurNodeSignInfo()
+	signInfos, err := mpcrpc.GetCurNodeSignInfo(0)
 	if err != nil {
 		log.Error("getCurNodeSignInfo failed", "err", err)
 		return err

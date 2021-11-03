@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
+	"time"
 
 	"github.com/anyswap/mpc-client/log"
 	"github.com/anyswap/mpc-client/mpcrpc/client"
@@ -98,32 +100,44 @@ func GetSignStatus(key, rpcAddr string) (*SignStatus, error) {
 }
 
 // GetAcceptList get accept list of 'user'
-func GetAcceptList(user string) ([]*SignInfoData, error) {
-	var result SignInfoResp
+func GetAcceptList(user string, expiredInterval int64) ([]*SignInfoData, error) {
 	if user == "" && mpcKeyWrapper != nil {
 		user = mpcKeyWrapper.Address.String()
 	}
-	err := httpPost(&result, "getCurNodeSignInfo", user)
-	if err != nil {
-		return nil, wrapPostError("getAcceptList", err)
-	}
-	if result.Status != successStatus {
-		return nil, newWrongStatusError("getAcceptList", result.Status, result.Error)
-	}
-	return result.Data, nil
+	return getCurNodeSignInfo(user, expiredInterval)
 }
 
 // GetCurNodeSignInfo call getCurNodeSignInfo
-func GetCurNodeSignInfo() ([]*SignInfoData, error) {
+func GetCurNodeSignInfo(expiredInterval int64) ([]*SignInfoData, error) {
+	return getCurNodeSignInfo(mpcKeyWrapper.Address.String(), expiredInterval)
+}
+
+// filter out invalid sign info and
+// filter out expired sign info if `expiredInterval` is greater than 0
+func getCurNodeSignInfo(user string, expiredInterval int64) ([]*SignInfoData, error) {
 	var result SignInfoResp
-	err := httpPost(&result, "getCurNodeSignInfo", mpcKeyWrapper.Address.String())
+	err := httpPost(&result, "getCurNodeSignInfo", user)
 	if err != nil {
 		return nil, wrapPostError("getCurNodeSignInfo", err)
 	}
 	if result.Status != successStatus {
 		return nil, newWrongStatusError("getCurNodeSignInfo", result.Status, result.Error)
 	}
-	return result.Data, nil
+	signInfoSortedSlice := make(SignInfoSortedSlice, 0, len(result.Data))
+	for _, signInfo := range result.Data {
+		if !signInfo.IsValid() {
+			log.Trace("filter out invalid sign info", "signInfo", signInfo)
+			continue
+		}
+		signInfo.timestamp, _ = GetUint64FromStr(signInfo.TimeStamp)
+		if expiredInterval > 0 && int64(signInfo.timestamp/1000)+expiredInterval < time.Now().Unix() {
+			log.Trace("filter out expired sign info", "signInfo", signInfo)
+			continue
+		}
+		signInfoSortedSlice = append(signInfoSortedSlice, signInfo)
+	}
+	sort.Stable(signInfoSortedSlice)
+	return signInfoSortedSlice, nil
 }
 
 // Sign call sign
@@ -239,30 +253,42 @@ func GetReqAddrStatus(key, rpcAddr string) (*ReqAddrStatus, error) {
 }
 
 // GetDKGAcceptList get dkg accept list
-func GetDKGAcceptList(user string) ([]*ReqAddrInfoData, error) {
-	var result ReqAddrInfoResp
+func GetDKGAcceptList(user string, expiredInterval int64) ([]*ReqAddrInfoData, error) {
 	if user == "" && mpcKeyWrapper != nil {
 		user = mpcKeyWrapper.Address.String()
 	}
-	err := httpPost(&result, "getCurNodeReqAddrInfo", user)
-	if err != nil {
-		return nil, wrapPostError("getDKGAcceptList", err)
-	}
-	if result.Status != successStatus {
-		return nil, newWrongStatusError("getDKGAcceptList", result.Status, result.Error)
-	}
-	return result.Data, nil
+	return getCurNodeReqAddrInfo(user, expiredInterval)
 }
 
 // GetCurNodeReqAddrInfo call getCurNodeReqAddrInfo
-func GetCurNodeReqAddrInfo() ([]*ReqAddrInfoData, error) {
+func GetCurNodeReqAddrInfo(expiredInterval int64) ([]*ReqAddrInfoData, error) {
+	return getCurNodeReqAddrInfo(mpcKeyWrapper.Address.String(), expiredInterval)
+}
+
+// filter out invalid reqAddr info and
+// filter out expired reqAddr info if `expiredInterval` is greater than 0
+func getCurNodeReqAddrInfo(user string, expiredInterval int64) ([]*ReqAddrInfoData, error) {
 	var result ReqAddrInfoResp
-	err := httpPost(&result, "getCurNodeReqAddrInfo", mpcKeyWrapper.Address.String())
+	err := httpPost(&result, "getCurNodeReqAddrInfo", user)
 	if err != nil {
 		return nil, wrapPostError("getCurNodeReqAddrInfo", err)
 	}
 	if result.Status != successStatus {
 		return nil, newWrongStatusError("getCurNodeReqAddrInfo", result.Status, result.Error)
 	}
-	return result.Data, nil
+	reqAddrInfoSortedSlice := make(ReqAddrInfoSortedSlice, 0, len(result.Data))
+	for _, reqAddrInfo := range result.Data {
+		if !reqAddrInfo.IsValid() {
+			log.Trace("filter out invalid info", "reqAddrInfo", reqAddrInfo)
+			continue
+		}
+		reqAddrInfo.timestamp, _ = GetUint64FromStr(reqAddrInfo.TimeStamp)
+		if expiredInterval > 0 && int64(reqAddrInfo.timestamp/1000)+expiredInterval < time.Now().Unix() {
+			log.Trace("filter out expired info", "reqAddrInfo", reqAddrInfo)
+			continue
+		}
+		reqAddrInfoSortedSlice = append(reqAddrInfoSortedSlice, reqAddrInfo)
+	}
+	sort.Stable(reqAddrInfoSortedSlice)
+	return reqAddrInfoSortedSlice, nil
 }

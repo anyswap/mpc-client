@@ -103,6 +103,10 @@ var (
 		Name:  "sig",
 		Usage: "show enode sig",
 	}
+	expiredIntervalFlag = &cli.Int64Flag{
+		Name:  "expiredInterval",
+		Usage: "expired interval of seconds",
+	}
 
 	gatewayFlag = &cli.StringFlag{
 		Name:  "gateway",

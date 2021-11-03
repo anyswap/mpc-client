@@ -57,6 +57,13 @@ type SignInfoData struct {
 	PubKey     string
 	ThresHold  string
 	TimeStamp  string
+
+	timestamp uint64 // used for filter and sorting
+}
+
+// IsValid is valid
+func (signInfo *SignInfoData) IsValid() bool {
+	return signInfo.Key != "" && signInfo.Account != "" && signInfo.GroupID != ""
 }
 
 // SignInfoResp sign info response
@@ -65,6 +72,24 @@ type SignInfoResp struct {
 	Tip    string
 	Error  string
 	Data   []*SignInfoData
+}
+
+// SignInfoSortedSlice sorted slice
+type SignInfoSortedSlice []*SignInfoData
+
+// Len impl Sortable
+func (s SignInfoSortedSlice) Len() int {
+	return len(s)
+}
+
+// Swap impl Sortable
+func (s SignInfoSortedSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+// Less impl Sortable
+func (s SignInfoSortedSlice) Less(i, j int) bool {
+	return s[i].timestamp < s[j].timestamp
 }
 
 // SignData sign data
@@ -135,6 +160,31 @@ type ReqAddrInfoData struct {
 	Nonce     string
 	ThresHold string
 	TimeStamp string
+
+	timestamp uint64 // used for filter and sorting
+}
+
+// IsValid is valid
+func (signInfo *ReqAddrInfoData) IsValid() bool {
+	return signInfo.Key != "" && signInfo.Account != "" && signInfo.GroupID != ""
+}
+
+// ReqAddrInfoSortedSlice sorted slice
+type ReqAddrInfoSortedSlice []*ReqAddrInfoData
+
+// Len impl Sortable
+func (s ReqAddrInfoSortedSlice) Len() int {
+	return len(s)
+}
+
+// Swap impl Sortable
+func (s ReqAddrInfoSortedSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+// Less impl Sortable
+func (s ReqAddrInfoSortedSlice) Less(i, j int) bool {
+	return s[i].timestamp < s[j].timestamp
 }
 
 // ReqAddrInfoResp request address info response

@@ -20,6 +20,7 @@ var (
 			mpcUserFlag,
 			mpcServerFlag,
 			mpcDKGFlag,
+			expiredIntervalFlag,
 			apiPrefixFlag,
 			rpcTimeoutFlag,
 		},
@@ -35,8 +36,9 @@ func getAcceptList(ctx *cli.Context) (err error) {
 
 	user := ctx.String(mpcUserFlag.Name)
 	isDKG := ctx.Bool(mpcDKGFlag.Name)
+	expiredInterval := ctx.Int64(expiredIntervalFlag.Name)
 	if isDKG {
-		accpetList, err := mpcrpc.GetDKGAcceptList(user)
+		accpetList, err := mpcrpc.GetDKGAcceptList(user, expiredInterval)
 		if err != nil {
 			return err
 		}
@@ -47,7 +49,7 @@ func getAcceptList(ctx *cli.Context) (err error) {
 		fmt.Println(string(jsData))
 		fmt.Println("accept list length is", len(accpetList))
 	} else {
-		accpetList, err := mpcrpc.GetAcceptList(user)
+		accpetList, err := mpcrpc.GetAcceptList(user, expiredInterval)
 		if err != nil {
 			return err
 		}
