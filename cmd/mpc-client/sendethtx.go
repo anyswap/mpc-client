@@ -38,7 +38,7 @@ var (
 			apiPrefixFlag,
 			rpcTimeoutFlag,
 			signTimeoutFlag,
-			gatewayFlag,
+			gatewaysFlag,
 			chainIDFlag,
 			createContractFlag,
 			fromAddrFlag,
@@ -54,7 +54,7 @@ var (
 )
 
 type sendEthTxArgs struct {
-	gateway  string
+	gateways []string
 	from     common.Address
 	to       common.Address
 	gasLimit uint64
@@ -68,12 +68,21 @@ type sendEthTxArgs struct {
 	createContract bool
 }
 
+type ethClientAndURL struct {
+	cli *ethclient.Client
+	url string
+}
+
 var (
 	txArgs sendEthTxArgs
+
+	ethClients []*ethClientAndURL
+
+	bgCtx = context.Background()
 )
 
 func checkSendEthTxArguments(ctx *cli.Context) (err error) {
-	txArgs.gateway = ctx.String(gatewayFlag.Name)
+	txArgs.gateways = ctx.StringSlice(gatewaysFlag.Name)
 	txArgs.gasLimit = ctx.Uint64(gasLimitFlag.Name)
 	txArgs.dryrun = ctx.Bool(dryrunFlag.Name)
 
@@ -147,9 +156,8 @@ func sendEthTx(ctx *cli.Context) (err error) {
 		return err
 	}
 
-	ethClient, err := ethclient.Dial(txArgs.gateway)
+	err = dailGateways(txArgs.gateways)
 	if err != nil {
-		log.Error("ethclient.Dial failed", "url", txArgs.gateway, "err", err)
 		return err
 	}
 
@@ -157,12 +165,12 @@ func sendEthTx(ctx *cli.Context) (err error) {
 	if txArgs.accNonce != nil {
 		nonce = txArgs.accNonce.Uint64()
 	} else {
-		nonce, err = ethClient.PendingNonceAt(context.Background(), txArgs.from)
+		nonce, err = getPendingNonce(txArgs.from)
 		if err != nil {
 			log.Error("get account nonce failed", "account", txArgs.from.String(), "err", err)
 			return err
 		}
-		log.Error("get account nonce success", "account", txArgs.from.String(), "nonce", nonce)
+		log.Info("get account nonce success", "account", txArgs.from.String(), "nonce", nonce)
 	}
 
 	var rawTx *types.Transaction
@@ -228,7 +236,7 @@ func sendEthTx(ctx *cli.Context) (err error) {
 	_ = printTx(signedTx, false)
 
 	if !txArgs.dryrun {
-		err = ethClient.SendTransaction(context.Background(), signedTx)
+		err = sendSignedTransaction(signedTx)
 		if err != nil {
 			log.Error("send tx failed", "err", err)
 			return err
@@ -236,6 +244,62 @@ func sendEthTx(ctx *cli.Context) (err error) {
 		log.Info("send tx success", "txHash", txHash)
 	}
 	return nil
+}
+
+func dailGateways(gateways []string) (err error) {
+	ethClients = make([]*ethClientAndURL, 0, len(gateways))
+	cliURLs := make([]string, 0, len(gateways))
+	var ethClient *ethclient.Client
+	for _, gateway := range gateways {
+		ethClient, err = ethclient.Dial(gateway)
+		if err != nil {
+			log.Warn("dail gateway failed", "url", gateway, "err", err)
+			continue
+		}
+		ethClients = append(ethClients, &ethClientAndURL{cli: ethClient, url: gateway})
+		cliURLs = append(cliURLs, gateway)
+	}
+	if len(ethClients) > 0 {
+		log.Info("dail gateways success", "clients", cliURLs)
+		return nil
+	}
+	return err
+}
+
+func getPendingNonce(account common.Address) (maxNonce uint64, err error) {
+	var success bool
+	var nonce uint64
+	for _, ethClient := range ethClients {
+		nonce, err = ethClient.cli.PendingNonceAt(bgCtx, account)
+		if err != nil {
+			log.Warn("get pending nonce failed", "account", account.String(), "url", ethClient.url, "err", err)
+			continue
+		}
+		success = true
+		if nonce > maxNonce {
+			maxNonce = nonce
+		}
+	}
+	if success {
+		return maxNonce, nil
+	}
+	return 0, err
+}
+
+func sendSignedTransaction(signedTx *types.Transaction) (err error) {
+	var success bool
+	for _, ethClient := range ethClients {
+		err = ethClient.cli.SendTransaction(bgCtx, signedTx)
+		if err != nil {
+			log.Warn("send tx failed", "hash", signedTx.Hash().String(), "url", ethClient.url, "err", err)
+			continue
+		}
+		success = true
+	}
+	if success {
+		return nil
+	}
+	return err
 }
 
 func printTx(tx *types.Transaction, jsonFmt bool) error {

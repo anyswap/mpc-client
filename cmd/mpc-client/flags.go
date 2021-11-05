@@ -97,7 +97,7 @@ var (
 	}
 	enodeSigsFlag = &cli.StringSliceFlag{
 		Name:  "sig",
-		Usage: "group member enodes sigs",
+		Usage: "group member enodes sigs (multiple)",
 	}
 	showEnodeSigFlag = &cli.BoolFlag{
 		Name:  "sig",
@@ -108,9 +108,9 @@ var (
 		Usage: "expired interval of seconds",
 	}
 
-	gatewayFlag = &cli.StringFlag{
+	gatewaysFlag = &cli.StringSliceFlag{
 		Name:  "gateway",
-		Usage: "gateway URL of blockchain full node",
+		Usage: "gateway URLs of full nodes (multiple)",
 	}
 	chainIDFlag = &cli.StringFlag{
 		Name:  "chainID",
