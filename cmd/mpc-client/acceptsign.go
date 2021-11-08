@@ -138,6 +138,12 @@ func verifyEthTxSignInfo(signInfo *mpcrpc.SignInfoData) (err error) {
 	if err != nil {
 		return fmt.Errorf("json unmarshal msgContext to ethtx failed. %w", err)
 	}
+
+	log.Printf("the sign is sending the following tx to block chain (chainID: %v)", chainIDStr)
+	if errf := printTx(&rawTx, true); errf != nil {
+		log.Warn("print transaction failed", "err", errf)
+	}
+
 	chainSigner := types.NewEIP155Signer(chainID)
 	calcedHash := chainSigner.Hash(&rawTx)
 	return checkMessageHash(calcedHash, msgHash)
@@ -185,6 +191,12 @@ func getSignInfoByKeyID(keyID string) (signInfo *mpcrpc.SignInfoData, err error)
 
 	fmt.Println("message hash is", signInfo.MsgHash)
 	fmt.Println("message context is", signInfo.MsgContext)
+
+	jsData, err := json.MarshalIndent(signInfo, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("sign info is", string(jsData))
 
 	return signInfo, nil
 }
