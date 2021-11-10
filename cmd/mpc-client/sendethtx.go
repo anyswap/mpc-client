@@ -309,7 +309,12 @@ func printTx(tx *types.Transaction, jsonFmt bool) error {
 			return fmt.Errorf("json marshal err %v", err)
 		}
 		fmt.Println(string(bs))
-		fmt.Printf("tx chainID is %v, value is %v, nonce is %v, gasPrice is %v, gasLimit is %v\n", tx.ChainId(), tx.Value(), tx.Nonce(), tx.GasPrice(), tx.Gas())
+		_, r, _ := tx.RawSignatureValues()
+		if r == nil || r.Sign() == 0 {
+			fmt.Printf("tx value is %v, nonce is %v, gasPrice is %v, gasLimit is %v\n", tx.Value(), tx.Nonce(), tx.GasPrice(), tx.Gas())
+		} else {
+			fmt.Printf("tx chainID is %v, value is %v, nonce is %v, gasPrice is %v, gasLimit is %v\n", tx.ChainId(), tx.Value(), tx.Nonce(), tx.GasPrice(), tx.Gas())
+		}
 	} else {
 		bs, err := tx.MarshalBinary()
 		if err != nil {
