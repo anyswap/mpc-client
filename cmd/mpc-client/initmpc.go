@@ -38,15 +38,17 @@ func checkAndInitMpcConfig(ctx *cli.Context, isSign bool) (err error) {
 		signMode := ctx.Uint64(signModeFlag.Name)
 		mpcCfg.Mode = &signMode
 
-		mpcPublicKey = ctx.String(pubkeyFlag.Name)
-		if mpcPublicKey == "" {
-			return errors.New("empty mpc public key")
+		if !mpcCfg.IsDKG {
+			mpcPublicKey = ctx.String(pubkeyFlag.Name)
+			if mpcPublicKey == "" {
+				return errors.New("empty mpc public key")
+			}
+			msgHashArg = ctx.String(msgHashFlag.Name)
+			if msgHashArg != "" && !strings.EqualFold(common.HexToHash(msgHashArg).String(), msgHashArg) {
+				return errors.New("wrong message hash argument")
+			}
+			msgContextArg = ctx.String(msgContextFlag.Name)
 		}
-		msgHashArg = ctx.String(msgHashFlag.Name)
-		if msgHashArg != "" && !strings.EqualFold(common.HexToHash(msgHashArg).String(), msgHashArg) {
-			return errors.New("wrong message hash argument")
-		}
-		msgContextArg = ctx.String(msgContextFlag.Name)
 		signMemoArg = ctx.String(signMemoFlag.Name)
 	}
 

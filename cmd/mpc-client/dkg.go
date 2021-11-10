@@ -35,6 +35,7 @@ var (
 func doDKG(ctx *cli.Context) (err error) {
 	utils.SetLogger(ctx)
 	mpcCfg.NeedKeyStore = true
+	mpcCfg.IsDKG = true
 	err = checkAndInitMpcConfig(ctx, true)
 	if err != nil {
 		return err

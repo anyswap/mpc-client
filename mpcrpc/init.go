@@ -42,7 +42,9 @@ type MPCConfig struct {
 	RPCTimeout   uint64
 	KeystoreFile string `json:"-"`
 	PasswordFile string `json:"-"`
-	NeedKeyStore bool   `json:"-"`
+
+	NeedKeyStore bool `json:"-"`
+	IsDKG        bool `json:"-"`
 
 	SignTimeout uint64
 	SignType    string // eg. ECDSA
