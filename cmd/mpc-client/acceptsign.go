@@ -143,6 +143,7 @@ func verifyEthTxSignInfo(signInfo *mpcrpc.SignInfoData) (err error) {
 	if errf := printTx(&rawTx, true); errf != nil {
 		log.Warn("print transaction failed", "err", errf)
 	}
+	parseEthTx(&rawTx)
 
 	chainSigner := types.NewEIP155Signer(chainID)
 	calcedHash := chainSigner.Hash(&rawTx)
