@@ -16,9 +16,10 @@ import (
 var (
 	mpcPublicKey string
 
-	msgHashArg    string
-	msgContextArg string
-	signMemoArg   string
+	msgHashArg     string
+	signMessageArg string
+	msgContextArg  string
+	signMemoArg    string
 
 	mpcCfg mpcrpc.MPCConfig
 )
@@ -44,10 +45,23 @@ func checkAndInitMpcConfig(ctx *cli.Context, isSign bool) (err error) {
 				return errors.New("empty mpc public key")
 			}
 			msgHashArg = ctx.String(msgHashFlag.Name)
+			msgContextArg = ctx.String(msgContextFlag.Name)
+			signMessageArg = ctx.String(signMessageFlag.Name)
+			if msgHashArg != "" && signMessageArg != "" {
+				return errors.New("can not specify both msghash and signmsg")
+			}
 			if msgHashArg != "" && !strings.EqualFold(common.HexToHash(msgHashArg).String(), msgHashArg) {
 				return errors.New("wrong message hash argument")
 			}
-			msgContextArg = ctx.String(msgContextFlag.Name)
+			if signMessageArg != "" {
+				msg := signMessageArg
+				if has0xPrefix(msg) {
+					msg = msg[2:]
+				}
+				if common.Bytes2Hex(common.Hex2Bytes(msg)) != msg {
+					return errors.New("wrong sign message content argument")
+				}
+			}
 		}
 		signMemoArg = ctx.String(signMemoFlag.Name)
 	}
@@ -56,6 +70,10 @@ func checkAndInitMpcConfig(ctx *cli.Context, isSign bool) (err error) {
 
 	mpcrpc.Init(&mpcCfg, isSign)
 	return nil
+}
+
+func has0xPrefix(str string) bool {
+	return len(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
 }
 
 func mergeConfigFromConfigFile(ctx *cli.Context) {

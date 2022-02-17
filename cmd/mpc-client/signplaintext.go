@@ -23,6 +23,7 @@ var (
 			pubkeyFlag,
 			msgHashFlag,
 			msgContextFlag,
+			signMessageFlag,
 			gidFlag,
 			thresholdFlag,
 			signModeFlag,
@@ -46,17 +47,27 @@ func signPlainText(ctx *cli.Context) (err error) {
 		return err
 	}
 
-	hash := crypto.Keccak256Hash([]byte(msgContextArg))
-	if hash != common.HexToHash(msgHashArg) {
-		return errors.New("message hash is not the keccak256 hash of plaintext msgContext")
+	var signContent string
+	var msgContext []string
+
+	if signMessageArg != "" {
+		signContent = signMessageArg
+		msgContext = []string{"hexstring", signMessageArg}
+	} else {
+		signContent = msgHashArg
+		msgContext = []string{"plaintext", msgContextArg}
+
+		hash := crypto.Keccak256Hash([]byte(msgContextArg))
+		if hash != common.HexToHash(msgHashArg) {
+			return errors.New("message hash is not the keccak256 hash of plaintext msgContext")
+		}
 	}
 
-	msgContext := []string{"plaintext", msgContextArg}
 	if signMemoArg != "" {
 		msgContext = append(msgContext, signMemoArg)
 	}
 
-	keyID, rsvs, err := mpcrpc.DoSign(mpcPublicKey, []string{msgHashArg}, msgContext)
+	keyID, rsvs, err := mpcrpc.DoSign(mpcPublicKey, []string{signContent}, msgContext)
 	if err != nil {
 		log.Error("mpc sign failed", "err", err)
 		return err

@@ -13,6 +13,10 @@ var (
 		Name:  "msghash",
 		Usage: "mpc sign message hash",
 	}
+	signMessageFlag = &cli.StringFlag{
+		Name:  "signmsg",
+		Usage: "mpc sign message of hex string",
+	}
 	msgContextFlag = &cli.StringFlag{
 		Name:  "msgcontext",
 		Usage: "mpc sign message context",
