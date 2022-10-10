@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const (
@@ -59,6 +60,11 @@ func Init(mpcConfig *MPCConfig, isSign bool) {
 	if isSign || mpcConfig.SignGroup != "" {
 		initSign(mpcConfig)
 	}
+}
+
+// SignWithKey sign by mpc node user with private key
+func SignWithKey(message []byte) ([]byte, error) {
+	return crypto.Sign(message, mpcKeyWrapper.PrivateKey)
 }
 
 func initRPC(mpcConfig *MPCConfig) {

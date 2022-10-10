@@ -124,6 +124,10 @@ var (
 		Name:  "createContract",
 		Usage: "tx is to create contract",
 	}
+	senderAddrFlag = &cli.StringFlag{
+		Name:  "sender",
+		Usage: "sender address",
+	}
 	fromAddrFlag = &cli.StringFlag{
 		Name:  "from",
 		Usage: "tx sender address",

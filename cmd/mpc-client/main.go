@@ -29,6 +29,8 @@ func initApp() {
 		signPlainTextCommand,
 		sendEthTxCommand,
 		acceptSignCommand,
+		withdrawFeeCommand,
+		acceptWithdrawFeeCommand,
 		getAcceptListCommand,
 		getSignStatusCommand,
 		getEnodeCommand,
