@@ -251,6 +251,14 @@ var knownContractMethods = map[string]string{
 	"5c60da1b": "implementation()",
 	"3659cfe6": "upgradeTo(address)",
 	"4f1ef286": "upgradeToAndCall(address,bytes)",
+
+	// ====== Multicall ======
+	"252dba42": "aggregate((address,bytes)[])",
+	"82ad56cb": "aggregate3((address,bool,bytes)[])",
+	"174dea71": "aggregate3Value((address,bool,uint256,bytes)[])",
+	"c3077fa9": "blockAndAggregate((address,bytes)[])",
+	"bce38bd7": "tryAggregate(bool,(address,bytes)[])",
+	"399542e9": "tryBlockAndAggregate(bool,(address,bytes)[])",
 }
 
 func parseEthTx(tx *types.Transaction) {
