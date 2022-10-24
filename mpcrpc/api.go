@@ -128,7 +128,7 @@ func getCurNodeSignInfo(user string, expiredInterval int64) ([]*SignInfoData, er
 	signInfoSortedSlice := make(SignInfoSortedSlice, 0, len(result.Data))
 	for _, signInfo := range result.Data {
 		if !signInfo.IsValid() {
-			log.Trace("filter out invalid sign info", "signInfo", signInfo, "keyID", signInfo.Key, "account", signInfo.Account, "groupID", signInfo.GroupID)
+			log.Trace("filter out invalid sign info", "signInfo", signInfo)
 			continue
 		}
 		signInfo.timestamp, _ = GetUint64FromStr(signInfo.TimeStamp)

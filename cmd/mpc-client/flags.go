@@ -124,18 +124,6 @@ var (
 		Name:  "createContract",
 		Usage: "tx is to create contract",
 	}
-	multicallsAddrFlag = &cli.StringFlag{
-		Name:  "multicalls",
-		Usage: "multicalls addresses (comma separated)",
-	}
-	senderAddrFlag = &cli.StringFlag{
-		Name:  "sender",
-		Usage: "sender address",
-	}
-	receiversAddrFlag = &cli.StringFlag{
-		Name:  "receivers",
-		Usage: "receivers addresses (comma separated)",
-	}
 	fromAddrFlag = &cli.StringFlag{
 		Name:  "from",
 		Usage: "tx sender address",

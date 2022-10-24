@@ -26,7 +26,7 @@ var (
 		ArgsUsage:   "",
 		Description: ``,
 		Flags: []cli.Flag{
-			senderAddrFlag,
+			initiatorAddrFlag,
 			receiversAddrFlag,
 			multicallsAddrFlag,
 			mpcServerFlag,
@@ -35,6 +35,19 @@ var (
 			apiPrefixFlag,
 			rpcTimeoutFlag,
 		},
+	}
+
+	initiatorAddrFlag = &cli.StringFlag{
+		Name:  "initiator",
+		Usage: "initiator address (who trigger mpc sign)",
+	}
+	receiversAddrFlag = &cli.StringFlag{
+		Name:  "receivers",
+		Usage: "receiver addresses (comma separated) (who receive fees)",
+	}
+	multicallsAddrFlag = &cli.StringFlag{
+		Name:  "multicalls",
+		Usage: "multicall addresses (comma separated) (which aggregate contract to use)",
 	}
 
 	feeAllowedSignSender  string
@@ -50,7 +63,7 @@ func acceptWithdrawFee(ctx *cli.Context) (err error) {
 		return err
 	}
 
-	feeAllowedSignSender = ctx.String(senderAddrFlag.Name)
+	feeAllowedSignSender = ctx.String(initiatorAddrFlag.Name)
 	if feeAllowedSignSender == "" {
 		return errors.New("must specify withdraw fee sender (with --sender option)")
 	}
@@ -149,7 +162,7 @@ func verifyWithdrawFeeSignInfo(info *mpcrpc.SignInfoData) (isAgree, isIgnore boo
 	pubKey, _ := crypto.UnmarshalPubkey(recoveredPub)
 	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
 	if !strings.EqualFold(feeAllowedSignSender, recoveredAddr.String()) {
-		return isAgree, isIgnore, fmt.Errorf("mismatch signature signer: %v", recoveredAddr.String())
+		return isAgree, isIgnore, fmt.Errorf("mismatch signature signer: want %v have %v", feeAllowedSignSender, recoveredAddr.String())
 	}
 
 	var rawTx types.Transaction
