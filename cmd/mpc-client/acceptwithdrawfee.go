@@ -71,16 +71,18 @@ func acceptWithdrawFee(ctx *cli.Context) (err error) {
 	}
 	log.Infof("withdraw fee allowed multicall contracts are %v", allowedMulticallAddrs)
 
-	signInfos, err := mpcrpc.GetCurNodeSignInfo(0)
-	if err != nil {
-		log.Error("getCurNodeSignInfo failed", "err", err)
-		return err
-	}
-
 	var loop uint64
 	for {
 		loop++
 		log.Infof("start accept loop %v", loop)
+
+		signInfos, errf := mpcrpc.GetCurNodeSignInfo(0)
+		if errf != nil {
+			log.Error("getCurNodeSignInfo failed", "err", errf)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
 		for _, info := range signInfos {
 			keyID := info.Key
 
@@ -94,7 +96,10 @@ func acceptWithdrawFee(ctx *cli.Context) (err error) {
 			}
 
 			agreeResult := getAgreeResult(isAgree)
-			return doAcceptSign(keyID, agreeResult, info.MsgHash, info.MsgContext)
+			errf = doAcceptSign(keyID, agreeResult, info.MsgHash, info.MsgContext)
+			if errf != nil {
+				log.Warn("call accept sign error", "keyID", keyID, "err", errf)
+			}
 		}
 		time.Sleep(5 * time.Second)
 	}
