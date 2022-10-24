@@ -52,7 +52,7 @@ func acceptWithdrawFee(ctx *cli.Context) (err error) {
 
 	feeAllowedSignSender = ctx.String(senderAddrFlag.Name)
 	if feeAllowedSignSender == "" {
-		return errors.New("must specify withdraw fee sender (with --from option)")
+		return errors.New("must specify withdraw fee sender (with --sender option)")
 	}
 	log.Infof("withdraw fee allowed sign sender is %v", feeAllowedSignSender)
 
@@ -82,6 +82,8 @@ func acceptWithdrawFee(ctx *cli.Context) (err error) {
 			time.Sleep(5 * time.Second)
 			continue
 		}
+
+		log.Infof("loop %v, count in accept list is %v", loop, len(signInfos))
 
 		for _, info := range signInfos {
 			keyID := info.Key

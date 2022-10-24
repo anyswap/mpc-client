@@ -115,6 +115,7 @@ func GetCurNodeSignInfo(expiredInterval int64) ([]*SignInfoData, error) {
 // filter out invalid sign info and
 // filter out expired sign info if `expiredInterval` is greater than 0
 func getCurNodeSignInfo(user string, expiredInterval int64) ([]*SignInfoData, error) {
+	log.Trace("call getCurNodeSignInfo", "user", user, "expiredInterval", expiredInterval)
 	var result SignInfoResp
 	err := httpPost(&result, "getCurNodeSignInfo", user)
 	if err != nil {
@@ -123,10 +124,11 @@ func getCurNodeSignInfo(user string, expiredInterval int64) ([]*SignInfoData, er
 	if result.Status != successStatus {
 		return nil, newWrongStatusError("getCurNodeSignInfo", result.Status, result.Error)
 	}
+	log.Trace("call getCurNodeSignInfo success", "user", user, "count", len(result.Data))
 	signInfoSortedSlice := make(SignInfoSortedSlice, 0, len(result.Data))
 	for _, signInfo := range result.Data {
 		if !signInfo.IsValid() {
-			log.Trace("filter out invalid sign info", "signInfo", signInfo)
+			log.Trace("filter out invalid sign info", "signInfo", signInfo, "keyID", signInfo.Key, "account", signInfo.Account, "groupID", signInfo.GroupID)
 			continue
 		}
 		signInfo.timestamp, _ = GetUint64FromStr(signInfo.TimeStamp)
@@ -268,6 +270,7 @@ func GetCurNodeReqAddrInfo(expiredInterval int64) ([]*ReqAddrInfoData, error) {
 // filter out invalid reqAddr info and
 // filter out expired reqAddr info if `expiredInterval` is greater than 0
 func getCurNodeReqAddrInfo(user string, expiredInterval int64) ([]*ReqAddrInfoData, error) {
+	log.Trace("call getCurNodeReqAddrInfo", "user", user, "expiredInterval", expiredInterval)
 	var result ReqAddrInfoResp
 	err := httpPost(&result, "getCurNodeReqAddrInfo", user)
 	if err != nil {
@@ -276,6 +279,7 @@ func getCurNodeReqAddrInfo(user string, expiredInterval int64) ([]*ReqAddrInfoDa
 	if result.Status != successStatus {
 		return nil, newWrongStatusError("getCurNodeReqAddrInfo", result.Status, result.Error)
 	}
+	log.Trace("call getCurNodeReqAddrInfo success", "user", user, "count", len(result.Data))
 	reqAddrInfoSortedSlice := make(ReqAddrInfoSortedSlice, 0, len(result.Data))
 	for _, reqAddrInfo := range result.Data {
 		if !reqAddrInfo.IsValid() {
