@@ -99,6 +99,15 @@ var knownContractMethods = map[string]string{
 	"8fd903f5": "wNATIVE()",
 	"832e9492": "withdrawNative(address,uint256,address)",
 
+	// ======= AnyswapV6Router ===================
+	"c604b0b8": "anySwapOut(address,string,uint256,uint256)",
+	"540dd52c": "anySwapOutNative(address,string,uint256)",
+	"049b4e7e": "anySwapOutUnderlying(address,string,uint256,uint256)",
+	"d9e35bb2": "applyMinter(address)",
+	"87bafe5f": "revokeMinter(address,address)",
+	"085c6d5e": "setEnableSwapTrade(bool)",
+	"9f122d6c": "setMinter(address,address)",
+
 	// ======= AnyCallProxy ===================
 	"32f29022": "anyCall(address,address[],bytes[],address[],uint256[],uint256)",
 	"5a11d475": "anyCall(address[],bytes[],address[],uint256[],uint256)",
@@ -195,11 +204,8 @@ var knownContractMethods = map[string]string{
 	"5de26385": "anySwapInNative(string,(bytes32,address,address,uint256,uint256))",
 	"9ff1d3e8": "anySwapInUnderlying(string,(bytes32,address,address,uint256,uint256))",
 	"cc95060a": "anySwapInUnderlyingAndExec(string,(bytes32,address,address,uint256,uint256),address,bytes)",
-	"c604b0b8": "anySwapOut(address,string,uint256,uint256)",
 	"6b4b4376": "anySwapOutAndCall(address,string,uint256,uint256,string,bytes)",
-	"540dd52c": "anySwapOutNative(address,string,uint256)",
 	"ea0c968b": "anySwapOutNativeAndCall(address,string,uint256,string,bytes)",
-	"049b4e7e": "anySwapOutUnderlying(address,string,uint256,uint256)",
 	"e0e9048e": "anySwapOutUnderlyingAndCall(address,string,uint256,uint256,string,bytes)",
 	"d2c7dfcc": "anycallExecutor()",
 	"1d5aa281": "anycallProxyInfo(address)",
